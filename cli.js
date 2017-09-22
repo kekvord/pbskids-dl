@@ -2,31 +2,33 @@ const getVideo = require("./getVideo.js");
 const download = require("./download.js");
 
 const Table = require("cli-table");
-
 const table = new Table();
 
-require("yargs")
-    .usage("$0 <cmd> [args]")
-    .command("dl [videolink]", "Downloads a video", {},
-        async function (args) {
-            const video = await getVideo(args.videolink);
+const commander = require("commander");
 
-            if (!video) return console.log("Cannot get video, please check your link, then try again.");
+commander
+    .version("1.0.0")
+    .command("dl <videolink>")
+    .description("Downloads a video")
+    .action(async function (videolink) {
+        const video = await getVideo(videolink);
 
-            table.push({
-                Title: video.title
-            }, {
-                Description: video.description
-            }, {
-                "Video Type": video.video_type
-            }, {
-                Duration: require("humanize-duration")(video.duration * 1000)
-            });
+        if (!video) return console.log("Cannot get video, please check your link, then try again.");
 
-            console.log(table.toString());
+        table.push({
+            Title: video.title
+        }, {
+            Description: video.description
+        }, {
+            "Video Type": video.video_type
+        }, {
+            Duration: require("humanize-duration")(video.duration * 1000)
+        });
 
-            await download(video.mp4, video.title);
+        console.log(table.toString());
 
-        })
-    .help()
-    .argv;
+        await download(video.mp4, video.title);
+
+    });
+
+commander.parse(process.argv);
